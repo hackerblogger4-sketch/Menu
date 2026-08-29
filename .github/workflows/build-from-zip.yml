@@ -1,4 +1,4 @@
-name: Build Android APK from source.zip
+name: Build Android APK from ZIP
 
 on:
   workflow_dispatch:
@@ -16,7 +16,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install unzip
-        run: sudo apt-get update && sudo apt-get install -y unzip
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip
 
       - name: Extract source.zip
         run: |
@@ -24,15 +26,26 @@ jobs:
           mkdir project
           unzip -q source.zip -d project
 
-      - name: Find Android Gradle project
+      - name: Find Android project
         shell: bash
         run: |
-          SETTINGS=$(find project -type f \( -name settings.gradle.kts -o -name settings.gradle \) | head -1)
+          SETTINGS=$(find project -type f \( \
+            -name "settings.gradle.kts" \
+            -o -name "settings.gradle" \
+          \) | head -1)
+
           if [ -z "$SETTINGS" ]; then
-            echo "ERROR: settings.gradle(.kts) not found inside source.zip"
+            echo "ERROR: Android project not found!"
+            echo "source.zip ichida settings.gradle yoki settings.gradle.kts bo'lishi kerak."
             exit 1
           fi
-          echo "ANDROID_PROJECT_DIR=$(dirname "$SETTINGS")" >> "$GITHUB_ENV"
+
+          PROJECT_DIR=$(dirname "$SETTINGS")
+
+          echo "Android project:"
+          echo "$PROJECT_DIR"
+
+          echo "ANDROID_PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -46,15 +59,21 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "9.5"
+          gradle-version: "9.5.1"
 
-      - name: Build debug APK
+      - name: Build APK
         working-directory: ${{ env.ANDROID_PROJECT_DIR }}
-        run: gradle assembleDebug --no-daemon
+        run: |
+          gradle assembleDebug --no-daemon
+
+      - name: Find APK
+        run: |
+          echo "APK files:"
+          find project -type f -name "*.apk" -print
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Lagan-QR-APK
-          path: ${{ env.ANDROID_PROJECT_DIR }}/app/build/outputs/apk/debug/app-debug.apk
+          path: project/**/build/outputs/apk/debug/*.apk
           if-no-files-found: error
