@@ -3,7 +3,7 @@ name: Extract Lagan ZIP and build
 on:
   push:
     paths:
-      - 'lagan-qr-mvp-source*.zip'
+      - 'lagan-qr-mvp*.zip'
       - '.github/workflows/extract-lagan.yml'
   workflow_dispatch:
 
@@ -15,7 +15,7 @@ jobs:
 
       - name: ZIP faylni ochish
         run: |
-          ZIP_FILE=$(find . -maxdepth 1 -type f -name 'lagan-qr-mvp-source*.zip' -print -quit)
+          ZIP_FILE=$(find . -maxdepth 1 -type f -name 'lagan-qr-mvp*.zip' -print -quit)
           test -n "$ZIP_FILE"
           unzip -q "$ZIP_FILE" -d extracted
 
@@ -36,7 +36,7 @@ jobs:
 
       - name: Android debug APK yig‘ish
         working-directory: extracted/lagan-qr-mvp/android-receiver
-        run: gradle assembleDebug -PAPI_BASE_URL=https://example.invalid/
+        run: gradle assembleDebug -PAPI_BASE_URL=${{ vars.API_BASE_URL }}
 
       - uses: actions/upload-artifact@v4
         with:
