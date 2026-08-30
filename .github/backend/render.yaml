@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: lagan-qr-api
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_FILE
+        value: /var/data/lagan.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DEFAULT_ADMIN_PIN
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: REPORT_CRON
+        value: 55 23 * * *
+      - key: REPORT_TIMEZONE
+        value: Asia/Tashkent
+      - key: REPORT_PERIOD
+        value: daily
+    disk:
+      name: lagan-data
+      mountPath: /var/data
+      sizeGB: 1
