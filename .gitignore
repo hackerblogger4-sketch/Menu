@@ -1,6 +1,0 @@
-backend/node_modules/
-backend/data/*.db
-backend/.env
-android-receiver/.gradle/
-android-receiver/**/build/
-local.properties
